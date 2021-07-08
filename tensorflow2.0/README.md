@@ -1,4 +1,3 @@
 ## tensorflow2.0
 
-results of models
-comming soon
+后续会贴一些训练过程与结果
