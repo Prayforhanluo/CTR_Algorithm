@@ -1,3 +1,2 @@
 ## Pytorch CTR
-results of models 
-comming soon
+后续会贴训练过程以及结果
