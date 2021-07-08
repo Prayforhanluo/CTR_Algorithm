@@ -1,6 +1,6 @@
 ## CTR Algorithm
 
-    根据论文, 博客, 知乎等方式学习一些CTR相关的算法
+    一些CTR相关的算法
     理解原理并自己动手来实现一遍
     pytorch & tf2.0
 
@@ -17,4 +17,5 @@
 |   PNN   |     :heavy_check_mark:    |          :heavy_check_mark:     |
 | XDeepFM |      :heavy_check_mark:   |               |
 |   DCN   |      :heavy_check_mark:   |        :heavy_check_mark:     |
+|  ... |  ...  |  ...  |
 
