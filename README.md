@@ -15,7 +15,7 @@
 |   AFM   |     :heavy_check_mark:    |        :heavy_check_mark:       |
 | DeepFM  |      :heavy_check_mark:   |        :heavy_check_mark:       |
 |   PNN   |     :heavy_check_mark:    |          :heavy_check_mark:     |
-| XDeepFM |      :heavy_check_mark:   |               |
+| XDeepFM |      :heavy_check_mark:   |           :heavy_check_mark:    |
 |   DCN   |      :heavy_check_mark:   |        :heavy_check_mark:     |
 |  ... |  ...  |  ...  |
 
