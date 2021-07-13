@@ -918,6 +918,27 @@ _ = train(model)
     EPOCH 0 train loss : 0.41618   validation loss : 0.40377   validation auc is 0.74731
     
 
+#### AutoInt
+
+
+```python
+from model import AutoInt
+```
+
+
+```python
+model = AutoInt.AutoIntNet(feature_fields=fields, embed_dim=8, head_num = 2, 
+                           attn_layers=3, mlp_dims=(32, 16), dropout=0.2)
+```
+
+
+```python
+_ = train(model)
+```
+
+    EPOCH 0 train loss : 0.54381   validation loss : 0.48163   validation auc is 0.69121
+    
+
 
 ```python
 
