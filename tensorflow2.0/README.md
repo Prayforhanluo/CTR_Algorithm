@@ -975,6 +975,40 @@ model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values,
 
 
 
+#### AutoInt
+
+
+```python
+from model import AutoInt
+```
+
+
+```python
+model = AutoInt.AutoInt(feature_fields=fields, embed_dim=16, head_num=4, attn_layers=3, mlp_dims=(32,16), dropout=0.2)
+```
+
+
+```python
+model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), 
+              loss = 'binary_crossentropy', metrics=[keras.metrics.AUC()])
+```
+
+
+```python
+model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
+```
+
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 28s 472us/sample - loss: 0.4216 - auc: 0.7077 - val_loss: 0.4071 - val_auc: 0.7415
+    
+
+
+
+
+    <tensorflow.python.keras.callbacks.History at 0x2103e456fd0>
+
+
+
 
 ```python
 
