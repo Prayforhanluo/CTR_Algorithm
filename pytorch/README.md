@@ -939,6 +939,563 @@ _ = train(model)
     EPOCH 0 train loss : 0.54381   validation loss : 0.48163   validation auc is 0.69121
     
 
+#### DIN
+
+Deep Interest Net在预测的时候，对用户不同的行为的注意力是不一样的
+
+在生成User embedding的时候，加入了Activation Unit Layer.这一层产生了每个用户行为的权重乘上相应的物品embedding，从而生产了user interest embedding的表示
+
+实际例子： Amazon Book数据 10K
+
+每条数据记录会有用户的行为数据
+
+只保留了商品特征，以及历史上的商品hist的特征.
+
+
+```python
+data = pd.read_csv('../data/amazon-books-100k.txt')
+```
+
+
+```python
+data
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>label</th>
+      <th>userID</th>
+      <th>itemID</th>
+      <th>cateID</th>
+      <th>hist_item_list</th>
+      <th>hist_cate_list</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>AZPJ9LUT0FEPY</td>
+      <td>B00AMNNTIA</td>
+      <td>Literature &amp; Fiction</td>
+      <td>0307744434|0062248391|0470530707|0978924622|15...</td>
+      <td>Books|Books|Books|Books|Books</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>AZPJ9LUT0FEPY</td>
+      <td>0800731603</td>
+      <td>Books</td>
+      <td>0307744434|0062248391|0470530707|0978924622|15...</td>
+      <td>Books|Books|Books|Books|Books</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>A2NRV79GKAU726</td>
+      <td>B003NNV10O</td>
+      <td>Russian</td>
+      <td>0814472869|0071462074|1583942300|0812538366|B0...</td>
+      <td>Books|Books|Books|Books|Baking|Books|Books</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1</td>
+      <td>A2NRV79GKAU726</td>
+      <td>B000UWJ91O</td>
+      <td>Books</td>
+      <td>0814472869|0071462074|1583942300|0812538366|B0...</td>
+      <td>Books|Books|Books|Books|Baking|Books|Books</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>A2GEQVDX2LL4V3</td>
+      <td>0321334094</td>
+      <td>Books</td>
+      <td>0743596870|0374280991|1439140634|0976475731</td>
+      <td>Books|Books|Books|Books</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>99995</th>
+      <td>1</td>
+      <td>A3I7LS4H993CXB</td>
+      <td>1481872060</td>
+      <td>Books</td>
+      <td>1936826135|1250014409|1480219851|1484823664|14...</td>
+      <td>Books|Books|Books|Books|Books|Literature &amp; Fic...</td>
+    </tr>
+    <tr>
+      <th>99996</th>
+      <td>0</td>
+      <td>AP00RAQ20KM12</td>
+      <td>1414334095</td>
+      <td>Books</td>
+      <td>0312328796|0758207182|0739470140|1601621450|18...</td>
+      <td>Books|Books|Books|Books|Books|Books|Books|Book...</td>
+    </tr>
+    <tr>
+      <th>99997</th>
+      <td>1</td>
+      <td>AP00RAQ20KM12</td>
+      <td>B0063LINHW</td>
+      <td>Historical</td>
+      <td>0312328796|0758207182|0739470140|1601621450|18...</td>
+      <td>Books|Books|Books|Books|Books|Books|Books|Book...</td>
+    </tr>
+    <tr>
+      <th>99998</th>
+      <td>0</td>
+      <td>A1ZVJYANTLTLVP</td>
+      <td>0762419229</td>
+      <td>Books</td>
+      <td>0743470117|0395851580|1451661215|0312342020</td>
+      <td>Books|Books|Books|Books</td>
+    </tr>
+    <tr>
+      <th>99999</th>
+      <td>1</td>
+      <td>A1ZVJYANTLTLVP</td>
+      <td>1455507202</td>
+      <td>Books</td>
+      <td>0743470117|0395851580|1451661215|0312342020</td>
+      <td>Books|Books|Books|Books</td>
+    </tr>
+  </tbody>
+</table>
+<p>100000 rows × 6 columns</p>
+</div>
+
+
+
+
+```python
+# AmazonBookPreprocess Function comes from ../data/AmazonDataPreprocess.py
+data = AmazonBookPreprocess(data)
+```
+
+
+```python
+data
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>hist_cate_0</th>
+      <th>hist_cate_1</th>
+      <th>hist_cate_2</th>
+      <th>hist_cate_3</th>
+      <th>hist_cate_4</th>
+      <th>hist_cate_5</th>
+      <th>hist_cate_6</th>
+      <th>hist_cate_7</th>
+      <th>hist_cate_8</th>
+      <th>hist_cate_9</th>
+      <th>...</th>
+      <th>hist_cate_32</th>
+      <th>hist_cate_33</th>
+      <th>hist_cate_34</th>
+      <th>hist_cate_35</th>
+      <th>hist_cate_36</th>
+      <th>hist_cate_37</th>
+      <th>hist_cate_38</th>
+      <th>hist_cate_39</th>
+      <th>cateID</th>
+      <th>label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>751</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>97</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1094</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>97</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>99995</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>751</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>99996</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>99997</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>607</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>99998</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>99999</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>100000 rows × 42 columns</p>
+</div>
+
+
+
+
+```python
+fields = data.max().max()
+```
+
+
+```python
+fields
+```
+
+
+
+
+    1347
+
+
+
+
+```python
+data_X = data.iloc[:,:-1]
+data_y = data.label.values
+```
+
+
+```python
+#train, validation, test 集合
+tmp_X, test_X, tmp_y, test_y = train_test_split(data_X, data_y, test_size = 0.2, random_state=42, stratify=data_y)
+train_X, val_X, train_y, val_y = train_test_split(tmp_X, tmp_y, test_size = 0.25, random_state=42, stratify=tmp_y)
+
+
+# 数据量小, 可以直接读
+train_X = torch.from_numpy(train_X.values).long()
+val_X = torch.from_numpy(val_X.values).long()
+test_X = torch.from_numpy(test_X.values).long()
+
+train_y = torch.from_numpy(train_y).long()
+val_y = torch.from_numpy(val_y).long()
+test_y = torch.from_numpy(test_y).long()
+
+train_set = Data.TensorDataset(train_X, train_y)
+val_set = Data.TensorDataset(val_X, val_y)
+train_loader = Data.DataLoader(dataset=train_set,
+                               batch_size=32,
+                               shuffle=True)
+val_loader = Data.DataLoader(dataset=val_set,
+                             batch_size=32,
+                             shuffle=False)
+```
+
+
+```python
+from model import DIN
+```
+
+
+```python
+model = DIN.DeepInterestNet(feature_dim=fields, embed_dim=8, mlp_dims=[64,32], dropout=0.2)
+```
+
+
+```python
+epoches = 1
+```
+
+
+```python
+_ = train(model)
+```
+
+    EPOCH 0 train loss : 0.68228   validation loss : 0.67945   validation auc is 0.58338
+    
+
 
 ```python
 
