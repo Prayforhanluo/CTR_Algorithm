@@ -1009,6 +1009,413 @@ model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values,
 
 
 
+####  DIN
+
+Deep Interest Net在预测的时候，对用户不同的行为的注意力是不一样的
+
+在生成User embedding的时候，加入了Activation Unit Layer.这一层产生了每个用户行为的权重乘上相应的物品embedding，从而生产了user interest embedding的表示
+
+实际例子： Amazon Book数据 10K
+
+每条数据记录会有用户的行为数据
+
+只保留了商品特征，以及历史上的商品hist的特征.
+
+
+```python
+
+# 预处理好的数据
+# 处理的函数在AmazonDataPreprocress.py中
+# 原始数据为.txt文件
+
+data = pd.read_csv('../data/amazon-books-100k-preprocessed.csv', index_col = 0)
+```
+
+
+```python
+data
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>hist_cate_0</th>
+      <th>hist_cate_1</th>
+      <th>hist_cate_2</th>
+      <th>hist_cate_3</th>
+      <th>hist_cate_4</th>
+      <th>hist_cate_5</th>
+      <th>hist_cate_6</th>
+      <th>hist_cate_7</th>
+      <th>hist_cate_8</th>
+      <th>hist_cate_9</th>
+      <th>...</th>
+      <th>hist_cate_32</th>
+      <th>hist_cate_33</th>
+      <th>hist_cate_34</th>
+      <th>hist_cate_35</th>
+      <th>hist_cate_36</th>
+      <th>hist_cate_37</th>
+      <th>hist_cate_38</th>
+      <th>hist_cate_39</th>
+      <th>cateID</th>
+      <th>label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>751</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>97</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1094</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>97</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>99995</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>751</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>99996</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>99997</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>607</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>99998</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>99999</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>100000 rows × 42 columns</p>
+</div>
+
+
+
+
+```python
+data_X = data.iloc[:,:-1]
+data_y = data.label.values
+```
+
+
+```python
+fields = data_X.max().max()
+```
+
+
+```python
+fields
+```
+
+
+
+
+    1347
+
+
+
+
+```python
+tmp_X, test_X, tmp_y, test_y = train_test_split(data_X, data_y, test_size = 0.2, random_state=42, stratify=data_y)
+train_X, val_X, train_y, val_y = train_test_split(tmp_X, tmp_y, test_size = 0.25, random_state=42, stratify=tmp_y)
+```
+
+
+```python
+from model import DIN
+```
+
+
+```python
+model = DIN.DeepInterestNet(feature_dim=fields, embed_dim=8, mlp_dims=[64,32], dropout=0.2)
+```
+
+
+```python
+model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), 
+              loss = 'binary_crossentropy', metrics=[keras.metrics.AUC()])
+```
+
+
+```python
+model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=2)
+```
+
+    Train on 60000 samples, validate on 20000 samples
+    Epoch 1/2
+    60000/60000 [==============================] - 14s 235us/sample - loss: 0.6788 - auc: 0.5817 - val_loss: 0.6751 - val_auc: 0.5981
+    Epoch 2/2
+    60000/60000 [==============================] - 11s 188us/sample - loss: 0.6687 - auc: 0.6080 - val_loss: 0.6744 - val_auc: 0.5921
+    
+
+
+
+
+    <tensorflow.python.keras.callbacks.History at 0x1abfc62fb00>
+
+
+
 
 ```python
 
