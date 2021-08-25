@@ -23,6 +23,6 @@
 | XDeepFM |      :heavy_check_mark:   |           :heavy_check_mark:    |
 |   DCN   |      :heavy_check_mark:   |        :heavy_check_mark:     |
 |  AutoInt | :heavy_check_mark:  | :heavy_check_mark:   |
-|  DIN | :heavy_check_mark:  |  |
+|  DIN | :heavy_check_mark:  | :heavy_check_mark:    |
 |  ... |  ...  |  ...  |
 
