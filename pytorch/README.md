@@ -1496,6 +1496,439 @@ _ = train(model)
     EPOCH 0 train loss : 0.68228   validation loss : 0.67945   validation auc is 0.58338
     
 
+#### DIEN
+
+相比于DIN， DIEN的改动：
+
+1） 关注兴趣的演化过程，提出了兴趣进化网络，用序列模型做的， DIN中用户兴趣之间是相互独立的，但实际上的兴趣是不断进化的
+
+2） 设计了一个兴趣抽取层，加入了一个二分类模型来辅助计算兴趣抽取的准确性
+
+3） 用序列模型表达用户的兴趣动态变化性
+
+实际的数据用例和DIN一样
+
+
+
+```python
+data = pd.read_csv('../data/amazon-books-100k-preprocessed.csv', index_col=0)
+```
+
+
+```python
+data
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>hist_cate_0</th>
+      <th>hist_cate_1</th>
+      <th>hist_cate_2</th>
+      <th>hist_cate_3</th>
+      <th>hist_cate_4</th>
+      <th>hist_cate_5</th>
+      <th>hist_cate_6</th>
+      <th>hist_cate_7</th>
+      <th>hist_cate_8</th>
+      <th>hist_cate_9</th>
+      <th>...</th>
+      <th>hist_cate_32</th>
+      <th>hist_cate_33</th>
+      <th>hist_cate_34</th>
+      <th>hist_cate_35</th>
+      <th>hist_cate_36</th>
+      <th>hist_cate_37</th>
+      <th>hist_cate_38</th>
+      <th>hist_cate_39</th>
+      <th>cateID</th>
+      <th>label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>751</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>97</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1094</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>97</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>99995</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>751</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>99996</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>99997</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>607</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>99998</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>99999</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>100000 rows × 42 columns</p>
+</div>
+
+
+
+
+```python
+fields = data.max().max()
+```
+
+
+```python
+data_X = data.iloc[:,:-1]
+data_y = data.label.values
+```
+
+
+```python
+from model.DIEN import DeepInterestEvolutionNet, auxiliary_sample
+```
+
+
+```python
+tmp_X, test_X, tmp_y, test_y = train_test_split(data_X, data_y, test_size = 0.2, random_state=42, stratify=data_y)
+train_X, val_X, train_y, val_y = train_test_split(tmp_X, tmp_y, test_size = 0.25, random_state=42, stratify=tmp_y)
+```
+
+
+```python
+train_X_neg = auxiliary_sample(train_X)
+```
+
+
+```python
+# 数据量小, 可以直接读
+train_X = torch.from_numpy(train_X.values).long()
+train_X_neg = torch.from_numpy(train_X_neg).long()
+val_X = torch.from_numpy(val_X.values).long()
+test_X = torch.from_numpy(test_X.values).long()
+
+train_y = torch.from_numpy(train_y).long()
+val_y = torch.from_numpy(val_y).long()
+test_y = torch.from_numpy(test_y).long()
+
+train_set = Data.TensorDataset(train_X, train_X_neg, train_y)
+val_set = Data.TensorDataset(val_X, val_y)
+train_loader = Data.DataLoader(dataset=train_set,
+                               batch_size=32,
+                               shuffle=True)
+val_loader = Data.DataLoader(dataset=val_set,
+                             batch_size=32,
+                             shuffle=False)
+```
+
+
+```python
+def train_dien(model):
+    for epoch in range(epoches):
+        train_loss = []
+        criterion = nn.BCELoss()
+        optimizer = optim.Adam(model.parameters(), lr = 0.001)
+        model.train()
+        for batch, (x, neg_x, y) in enumerate(train_loader):
+            pred, auxiliary_loss = model(x, neg_x)
+            loss = criterion(pred, y.float().detach()) + auxiliary_loss
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            train_loss.append(loss.item())
+
+        model.eval()
+        val_loss = []
+        prediction = []
+        y_true = []
+        with torch.no_grad():
+            for batch, (x, y) in enumerate(val_loader):
+                pred, _ = model(x)
+                loss = criterion(pred, y.float().detach())
+                val_loss.append(loss.item())
+                prediction.extend(pred.tolist())
+                y_true.extend(y.tolist())
+        val_auc = roc_auc_score(y_true=y_true, y_score=prediction)
+        print ("EPOCH %s train loss : %.5f   validation loss : %.5f   validation auc is %.5f" % (epoch, np.mean(train_loss), np.mean(val_loss), val_auc))        
+        return train_loss, val_loss, val_auc
+```
+
+
+```python
+dien = DeepInterestEvolutionNet(feature_dim=fields, embed_dim=4, hidden_size=4, mlp_dims=[64,32], dropout=0.2)
+```
+
+
+```python
+_ = train_dien(dien)
+```
+
+    EPOCH 0 train loss : 0.69140   validation loss : 0.68867   validation auc is 0.54903
+    
+
 
 ```python
 
