@@ -1913,7 +1913,7 @@ def train_dien(model):
                 y_true.extend(y.tolist())
         val_auc = roc_auc_score(y_true=y_true, y_score=prediction)
         print ("EPOCH %s train loss : %.5f   validation loss : %.5f   validation auc is %.5f" % (epoch, np.mean(train_loss), np.mean(val_loss), val_auc))        
-        return train_loss, val_loss, val_auc
+    return train_loss, val_loss, val_auc
 ```
 
 
@@ -1926,7 +1926,8 @@ dien = DeepInterestEvolutionNet(feature_dim=fields, embed_dim=4, hidden_size=4, 
 _ = train_dien(dien)
 ```
 
-    EPOCH 0 train loss : 0.69140   validation loss : 0.68867   validation auc is 0.54903
+    EPOCH 0 train loss : 0.68810   validation loss : 0.68992   validation auc is 0.58069
+    EPOCH 1 train loss : 0.68111   validation loss : 0.70098   validation auc is 0.58106
     
 
 
