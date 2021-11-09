@@ -1814,7 +1814,7 @@ for epoch in range(epoches):
     epoch_train_loss = tf.keras.metrics.Mean()
     for batch, (x, neg_x, y) in tqdm(enumerate(train_loader)):
         with tf.GradientTape() as tape:
-            out, aux_loss = model(x)
+            out, aux_loss = model(x, neg_x)
             loss = tf.keras.losses.binary_crossentropy(y, out)
             loss = tf.reduce_mean(loss) + tf.cast(aux_loss, tf.float32)
             loss = tf.reduce_mean(loss)
