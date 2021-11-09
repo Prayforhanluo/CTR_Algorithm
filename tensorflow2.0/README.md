@@ -1,10 +1,17 @@
 ```python
 import pandas as pd
 import numpy as np
+import tensorflow as tf
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from tensorflow import keras
+from tqdm import tqdm
+```
+
+
+```python
+tf.get_logger().setLevel('ERROR')
 ```
 
 ## Loading Data
@@ -1415,6 +1422,438 @@ model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values,
     <tensorflow.python.keras.callbacks.History at 0x1abfc62fb00>
 
 
+
+### DIEN
+
+相比于DIN， DIEN的改动：
+
+1） 关注兴趣的演化过程，提出了兴趣进化网络，用序列模型做的， DIN中用户兴趣之间是相互独立的，但实际上的兴趣是不断进化的
+
+2） 设计了一个兴趣抽取层，加入了一个二分类模型来辅助计算兴趣抽取的准确性
+
+3） 用序列模型表达用户的兴趣动态变化性
+
+实际的数据用例和DIN一样
+
+
+```python
+data = pd.read_csv('../data/amazon-books-100k-preprocessed.csv', index_col=0)
+```
+
+
+```python
+data
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>hist_cate_0</th>
+      <th>hist_cate_1</th>
+      <th>hist_cate_2</th>
+      <th>hist_cate_3</th>
+      <th>hist_cate_4</th>
+      <th>hist_cate_5</th>
+      <th>hist_cate_6</th>
+      <th>hist_cate_7</th>
+      <th>hist_cate_8</th>
+      <th>hist_cate_9</th>
+      <th>...</th>
+      <th>hist_cate_32</th>
+      <th>hist_cate_33</th>
+      <th>hist_cate_34</th>
+      <th>hist_cate_35</th>
+      <th>hist_cate_36</th>
+      <th>hist_cate_37</th>
+      <th>hist_cate_38</th>
+      <th>hist_cate_39</th>
+      <th>cateID</th>
+      <th>label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>751</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>97</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1094</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>97</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>99995</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>751</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>99996</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>99997</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>607</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>99998</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>99999</th>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>142</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>142</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>100000 rows × 42 columns</p>
+</div>
+
+
+
+
+```python
+fields = data.max().max()
+data_X = data.iloc[:,:-1]
+data_y = data.label.values
+```
+
+
+```python
+from model.DIEN import DeepInterestEvolutionNet, auxiliary_sample
+```
+
+
+```python
+tmp_X, test_X, tmp_y, test_y = train_test_split(data_X, data_y, test_size = 0.2, random_state=42, stratify=data_y)
+train_X, val_X, train_y, val_y = train_test_split(tmp_X, tmp_y, test_size = 0.25, random_state=42, stratify=tmp_y)
+```
+
+
+```python
+train_X_neg = auxiliary_sample(train_X)
+```
+
+
+```python
+train_X = train_X.values
+val_X = val_X.values
+test_X = test_X.values
+```
+
+
+```python
+train_loader = tf.data.Dataset.from_tensor_slices((train_X, train_X_neg, train_y)).shuffle(len(train_X)).batch(128)
+```
+
+
+```python
+val_loader  =tf.data.Dataset.from_tensor_slices((val_X, val_y)).batch(128)
+```
+
+
+```python
+model = DeepInterestEvolutionNet(feature_dim=fields, embed_dim=4, mlp_dims=[64,32], dropout=0.2)
+optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
+```
+
+
+```python
+epoches = 3
+for epoch in range(epoches):
+    epoch_train_loss = tf.keras.metrics.Mean()
+    for batch, (x, neg_x, y) in tqdm(enumerate(train_loader)):
+        with tf.GradientTape() as tape:
+            out, aux_loss = model(x)
+            loss = tf.keras.losses.binary_crossentropy(y, out)
+            loss = tf.reduce_mean(loss) + tf.cast(aux_loss, tf.float32)
+            loss = tf.reduce_mean(loss)
+        grads = tape.gradient(loss, model.trainable_variables)
+        optimizer.apply_gradients(grads_and_vars = zip(grads, model.trainable_variables))
+        epoch_train_loss(loss)
+    epoch_val_loss = tf.keras.metrics.Mean()
+    for batch, (x, y) in tqdm(enumerate(val_loader)):
+        out,_ = model(x)
+        loss = tf.keras.losses.binary_crossentropy(y, out)
+        loss = tf.reduce_mean(loss)
+        epoch_val_loss(loss)
+    print('EPOCH : %s, train loss : %s, val loss: %s' % (epoch,
+                                                         epoch_train_loss.result().numpy(),
+                                                         epoch_val_loss.result().numpy()))
+```
+
+    469it [02:12,  3.54it/s]
+    157it [00:18,  8.52it/s]
+    0it [00:00, ?it/s]
+
+    EPOCH : 0, train loss : 0.6932059, val loss: 0.69317245
+    
+
+    469it [02:08,  3.64it/s]
+    157it [00:18,  8.48it/s]
+    0it [00:00, ?it/s]
+
+    EPOCH : 1, train loss : 0.69317055, val loss: 0.69314915
+    
+
+    469it [02:12,  3.55it/s]
+    157it [00:18,  8.68it/s]
+
+    EPOCH : 2, train loss : 0.693162, val loss: 0.6931575
+    
+
+    
+    
 
 
 ```python
