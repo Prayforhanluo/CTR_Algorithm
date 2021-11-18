@@ -754,7 +754,7 @@ def train(model):
                 y_true.extend(y.tolist())
         val_auc = roc_auc_score(y_true=y_true, y_score=prediction)
         print ("EPOCH %s train loss : %.5f   validation loss : %.5f   validation auc is %.5f" % (epoch, np.mean(train_loss), np.mean(val_loss), val_auc))        
-        return train_loss, val_loss, val_auc
+    return train_loss, val_loss, val_auc
 ```
 
 #### LR
@@ -937,6 +937,26 @@ _ = train(model)
 ```
 
     EPOCH 0 train loss : 0.54381   validation loss : 0.48163   validation auc is 0.69121
+    
+
+#### FiBiNet
+
+
+```python
+from model import FiBiNET
+```
+
+
+```python
+model = FiBiNET.FiBiNET(feature_fields=fields, embed_dim=8, reduction_ratio=2, pooling='mean')
+```
+
+
+```python
+_ = train(model)
+```
+
+    EPOCH 0 train loss : 0.41572   validation loss : 0.40727   validation auc is 0.74458
     
 
 #### DIN
