@@ -22,4 +22,4 @@
 |   AutoInt   |      :heavy_check_mark:   |        :heavy_check_mark:     |
 |   DIN   |      :heavy_check_mark:   |        :heavy_check_mark:     |
 |   DIEN   |      :heavy_check_mark:   |        :heavy_check_mark:     |
-|   FiBiNET |     :heavy_check_mark:  |    |
+|   FiBiNET |     :heavy_check_mark:  |  :heavy_check_mark:  |
