@@ -1016,6 +1016,40 @@ model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values,
 
 
 
+#### FiBiNet
+
+
+```python
+from model import FiBiNET
+```
+
+
+```python
+model = FiBiNET.FiBiNET(feature_fields=fields, embed_dim=8, reduction_ratio=2, pooling='mean')
+```
+
+
+```python
+model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), 
+              loss = 'binary_crossentropy', metrics=[keras.metrics.AUC()])
+```
+
+
+```python
+model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
+```
+
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 84s 1ms/sample - loss: 0.4162 - auc: 0.7199 - val_loss: 0.4061 - val_auc: 0.7458
+    
+
+
+
+
+    <tensorflow.python.keras.callbacks.History at 0x273f8c34b70>
+
+
+
 ####  DIN
 
 Deep Interest Net在预测的时候，对用户不同的行为的注意力是不一样的
