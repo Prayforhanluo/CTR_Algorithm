@@ -959,6 +959,41 @@ _ = train(model)
     EPOCH 0 train loss : 0.41572   validation loss : 0.40727   validation auc is 0.74458
     
 
+#### DCNv2
+
+
+```python
+from model import DCNv2
+```
+
+
+```python
+model =  DCNv2.DeepCrossNetv2(feature_fields = fields, embed_dim = 16, layer_num = 2, mlp_dims = (32, 16), dropout = 0.1)
+```
+
+
+```python
+_ = train(model)
+```
+
+    EPOCH 0 train loss : 0.41408   validation loss : 0.40528   validation auc is 0.74748
+    
+
+
+```python
+model =  DCNv2.DeepCrossNetv2(feature_fields = fields, embed_dim = 16, layer_num = 2, mlp_dims = (32, 16), dropout = 0.1,cross_method='Matrix')
+```
+
+
+```python
+_ = train(model)
+```
+
+    EPOCH 0 train loss : 0.41409   validation loss : 0.40550   validation auc is 0.75017
+    
+
+## 序列模型
+
 #### DIN
 
 Deep Interest Net在预测的时候，对用户不同的行为的注意力是不一样的
