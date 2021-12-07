@@ -680,10 +680,20 @@ data_X
     每一个特征都独立进行了label 编码， 这种好处是可以直接进行embedding
     当我们embedding共享权值的时候， 可以给每列特征的label加入之前特征的类别总和，来达到所有特征的label
     这也是所有模型代码中 offset 的作用
+    
+    e.g. field_dims = [2, 4, 2], offsets = [0, 2, 6]
+
+    所以，实际look up table中
+    0 - 1行 对应 特征 X0, 即 field_dims[0]
+    2 - 5行 对应 特征 X1, 即 field_dims[1]
+    6 - 7行 对应 特征 X2, 即 field_dims[2]
+    但实际特征取值 forward(self, x) 的 x大小 只在自身词表内取值
+    比如：X1取值1，对应Embedding内行数就是 offsets[X1] + X1 = 2 + 1 = 3
+
 
 
 ```python
-fields = data_X.max().values # 模型输入的feature_fields
+fields = data_X.max().values + 1 # 模型输入的feature_fields
 ```
 
 
@@ -694,9 +704,9 @@ fields
 
 
 
-    array([    1,     5,     5,   986,   871,    17,   768,    61,    18,
-            8543, 47308,  2605,     3,     3,   447,     4,     5,   140,
-               3,    37,   143,    32], dtype=int64)
+    array([    2,     6,     6,   987,   872,    18,   769,    62,    19,
+            8544, 47309,  2606,     4,     4,   448,     5,     6,   141,
+               4,    38,   144,    33], dtype=int64)
 
 
 
@@ -740,13 +750,14 @@ model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
 model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
 ```
 
-    1875/1875 [==============================] - 2s 1ms/step - loss: 0.4248 - auc: 0.6999 - val_loss: 0.4139 - val_auc: 0.7286
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 5s 86us/sample - loss: 0.4232 - auc: 0.7029 - val_loss: 0.4135 - val_auc: 0.7317
     
 
 
 
 
-    <tensorflow.python.keras.callbacks.History at 0x1395e7092b0>
+    <tensorflow.python.keras.callbacks.History at 0x243c491bdd8>
 
 
 
@@ -773,13 +784,14 @@ model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
 model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
 ```
 
-    1875/1875 [==============================] - 8s 4ms/step - loss: 0.4172 - auc_1: 0.7168 - val_loss: 0.4071 - val_auc_1: 0.7449
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 14s 229us/sample - loss: 0.4195 - auc_1: 0.7145 - val_loss: 0.4058 - val_auc_1: 0.7435
     
 
 
 
 
-    <tensorflow.python.keras.callbacks.History at 0x1395fce5070>
+    <tensorflow.python.keras.callbacks.History at 0x243cb3ecc18>
 
 
 
@@ -806,13 +818,14 @@ model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
 model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
 ```
 
-    1875/1875 [==============================] - 132s 70ms/step - loss: 0.4077 - auc_2: 0.7369 - val_loss: 0.4032 - val_auc_2: 0.7527
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 216s 4ms/sample - loss: 0.4079 - auc_2: 0.7364 - val_loss: 0.4018 - val_auc_2: 0.7529
     
 
 
 
 
-    <tensorflow.python.keras.callbacks.History at 0x1395fd41280>
+    <tensorflow.python.keras.callbacks.History at 0x243d1f00908>
 
 
 
@@ -839,13 +852,14 @@ model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
 model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
 ```
 
-    1875/1875 [==============================] - 10s 5ms/step - loss: 0.4247 - auc_3: 0.7009 - val_loss: 0.4108 - val_auc_3: 0.7329
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 20s 325us/sample - loss: 0.4267 - auc_3: 0.6965 - val_loss: 0.4119 - val_auc_3: 0.7317
     
 
 
 
 
-    <tensorflow.python.keras.callbacks.History at 0x13904f56700>
+    <tensorflow.python.keras.callbacks.History at 0x243ec9d36d8>
 
 
 
@@ -872,13 +886,14 @@ model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
 model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
 ```
 
-    1875/1875 [==============================] - 9s 5ms/step - loss: 0.4216 - auc_4: 0.7084 - val_loss: 0.4061 - val_auc_4: 0.7436
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 17s 288us/sample - loss: 0.4250 - auc_4: 0.7027 - val_loss: 0.4068 - val_auc_4: 0.7410
     
 
 
 
 
-    <tensorflow.python.keras.callbacks.History at 0x13905d387f0>
+    <tensorflow.python.keras.callbacks.History at 0x243cc90a438>
 
 
 
@@ -906,13 +921,14 @@ model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
 model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
 ```
 
-    1875/1875 [==============================] - 12s 6ms/step - loss: 0.4259 - auc_5: 0.7008 - val_loss: 0.4083 - val_auc_5: 0.7396
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 20s 340us/sample - loss: 0.4291 - auc_5: 0.6972 - val_loss: 0.4099 - val_auc_5: 0.7386
     
 
 
 
 
-    <tensorflow.python.keras.callbacks.History at 0x13909067940>
+    <tensorflow.python.keras.callbacks.History at 0x243f5982128>
 
 
 
@@ -939,13 +955,14 @@ model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
 model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
 ```
 
-    1875/1875 [==============================] - 9s 5ms/step - loss: 0.4718 - auc_6: 0.6593 - val_loss: 0.4095 - val_auc_6: 0.7360
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 15s 246us/sample - loss: 0.4352 - auc_6: 0.6846 - val_loss: 0.4120 - val_auc_6: 0.7339
     
 
 
 
 
-    <tensorflow.python.keras.callbacks.History at 0x13909f55880>
+    <tensorflow.python.keras.callbacks.History at 0x243fb894080>
 
 
 
@@ -972,13 +989,14 @@ model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
 model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
 ```
 
-    1875/1875 [==============================] - 9s 5ms/step - loss: 0.4173 - auc_7: 0.7175 - val_loss: 0.4051 - val_auc_7: 0.7464
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 14s 241us/sample - loss: 0.4152 - auc_7: 0.7203 - val_loss: 0.4049 - val_auc_7: 0.7458
     
 
 
 
 
-    <tensorflow.python.keras.callbacks.History at 0x13909cf5370>
+    <tensorflow.python.keras.callbacks.History at 0x243fa8b5b00>
 
 
 
@@ -1006,13 +1024,13 @@ model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values,
 ```
 
     Train on 60000 samples, validate on 20000 samples
-    60000/60000 [==============================] - 28s 472us/sample - loss: 0.4216 - auc: 0.7077 - val_loss: 0.4071 - val_auc: 0.7415
+    60000/60000 [==============================] - 29s 477us/sample - loss: 0.4283 - auc_8: 0.7040 - val_loss: 0.4064 - val_auc_8: 0.7437
     
 
 
 
 
-    <tensorflow.python.keras.callbacks.History at 0x2103e456fd0>
+    <tensorflow.python.keras.callbacks.History at 0x243858b2be0>
 
 
 
@@ -1040,13 +1058,13 @@ model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values,
 ```
 
     Train on 60000 samples, validate on 20000 samples
-    60000/60000 [==============================] - 84s 1ms/sample - loss: 0.4162 - auc: 0.7199 - val_loss: 0.4061 - val_auc: 0.7458
+    60000/60000 [==============================] - 75s 1ms/sample - loss: 0.4149 - auc_9: 0.7225 - val_loss: 0.4094 - val_auc_9: 0.7445
     
 
 
 
 
-    <tensorflow.python.keras.callbacks.History at 0x273f8c34b70>
+    <tensorflow.python.keras.callbacks.History at 0x2439817def0>
 
 
 
@@ -1837,7 +1855,7 @@ val_loader  =tf.data.Dataset.from_tensor_slices((val_X, val_y)).batch(128)
 
 
 ```python
-model = DeepInterestEvolutionNet(feature_dim=fields, embed_dim=4, mlp_dims=[64,32], dropout=0.2)
+model = DeepInterestEvolutionNet(feature_dim=fields, embed_dim=4, mlp_dims=[32,32], dropout=0.2, gru_type = 'GRU')
 optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
 ```
 
@@ -1866,24 +1884,24 @@ for epoch in range(epoches):
                                                          epoch_val_loss.result().numpy()))
 ```
 
-    469it [02:12,  3.54it/s]
-    157it [00:18,  8.52it/s]
+    469it [01:42,  4.58it/s]
+    157it [00:11, 14.24it/s]
     0it [00:00, ?it/s]
 
-    EPOCH : 0, train loss : 0.6932059, val loss: 0.69317245
+    EPOCH : 0, train loss : 1.9061264, val loss: 0.69325197
     
 
-    469it [02:08,  3.64it/s]
-    157it [00:18,  8.48it/s]
+    469it [01:43,  4.55it/s]
+    157it [00:11, 14.19it/s]
     0it [00:00, ?it/s]
 
-    EPOCH : 1, train loss : 0.69317055, val loss: 0.69314915
+    EPOCH : 1, train loss : 0.80915856, val loss: 0.6931492
     
 
-    469it [02:12,  3.55it/s]
-    157it [00:18,  8.68it/s]
+    469it [01:42,  4.57it/s]
+    157it [00:11, 14.26it/s]
 
-    EPOCH : 2, train loss : 0.693162, val loss: 0.6931575
+    EPOCH : 2, train loss : 0.7702951, val loss: 0.693148
     
 
     
