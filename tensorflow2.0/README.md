@@ -1068,6 +1068,71 @@ model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values,
 
 
 
+#### DCNv2
+
+
+```python
+from model import DCNv2
+```
+
+
+```python
+model = DCNv2.DeepCrossNetv2(feature_fields = fields, embed_dim = 16, layer_num = 2,
+                             mlp_dims = (32, 16), dropout = 0.1, cross_method = 'Matrix')
+```
+
+
+```python
+model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), 
+              loss = 'binary_crossentropy', metrics=[keras.metrics.AUC()])
+```
+
+
+```python
+model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
+```
+
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 39s 645us/sample - loss: 0.4122 - auc_10: 0.7278 - val_loss: 0.4039 - val_auc_10: 0.7517
+    
+
+
+
+
+    <tensorflow.python.keras.callbacks.History at 0x24421bdd198>
+
+
+
+
+```python
+model = DCNv2.DeepCrossNetv2(feature_fields = fields, embed_dim = 16, layer_num = 2,
+                             mlp_dims = (32, 16), dropout = 0.1, cross_method = 'Mix')
+```
+
+
+```python
+model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), 
+              loss = 'binary_crossentropy', metrics=[keras.metrics.AUC()])
+```
+
+
+```python
+model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
+```
+
+    Train on 60000 samples, validate on 20000 samples
+    60000/60000 [==============================] - 30s 507us/sample - loss: 0.4142 - auc_11: 0.7233 - val_loss: 0.4066 - val_auc_11: 0.7464
+    
+
+
+
+
+    <tensorflow.python.keras.callbacks.History at 0x24424dac080>
+
+
+
+## 序列模型
+
 ####  DIN
 
 Deep Interest Net在预测的时候，对用户不同的行为的注意力是不一样的
