@@ -23,4 +23,4 @@
 |   DIN   |      :heavy_check_mark:   |        :heavy_check_mark:     |[Deep Interest Network for Click-Through Rate Prediction,2018](https://arxiv.org/pdf/1706.06978.pdf) |
 |   DIEN   |      :heavy_check_mark:   |        :heavy_check_mark:     |[Deep Interest Evolution Network for Click-Through Rate Prediction,2019](https://arxiv.org/pdf/1809.03672.pdf) |
 |   FiBiNET |     :heavy_check_mark:  |  :heavy_check_mark:  | [FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction,2019](https://arxiv.org/pdf/1905.09433.pdf) |
-|   DCN-V2  |  :heavy_check_mark:  |  | [Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems,2020](https://arxiv.org/abs/2008.13535) |
+|   DCN-V2  |  :heavy_check_mark:  | :heavy_check_mark:  | [Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems,2020](https://arxiv.org/abs/2008.13535) |
