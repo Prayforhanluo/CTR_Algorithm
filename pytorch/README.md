@@ -678,9 +678,18 @@ data_X
     当我们embedding共享权值的时候， 可以给每列特征的label加入之前特征的类别总和，来达到所有特征的label
     这也是所有模型代码中 offset 的作用
 
+    e.g. field_dims = [2, 4, 2], offsets = [0, 2, 6]
+
+    所以，实际look up table中
+    0 - 1行 对应 特征 X0, 即 field_dims[0]
+    2 - 5行 对应 特征 X1, 即 field_dims[1]
+    6 - 7行 对应 特征 X2, 即 field_dims[2]
+    但实际特征取值 forward(self, x) 的 x大小 只在自身词表内取值
+    比如：X1取值1，对应Embedding内行数就是 offsets[X1] + X1 = 2 + 1 = 3
+
 
 ```python
-fields = data_X.max().values # 模型输入的feature_fields
+fields = data_X.max().values + 1 # 模型输入的feature_fields
 ```
 
 
@@ -774,7 +783,7 @@ model = LR.LogisticRegression(feature_fields=fields)
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.69772   validation loss : 0.60676   validation auc is 0.61067
+    EPOCH 0 train loss : 0.76449   validation loss : 0.64623   validation auc is 0.59039
     
 
 #### FM
@@ -794,7 +803,7 @@ model = FM.FactorizationMachine(feature_fields=fields, embed_dim=8)
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.57438   validation loss : 0.48955   validation auc is 0.69284
+    EPOCH 0 train loss : 0.60432   validation loss : 0.49426   validation auc is 0.67547
     
 
 #### FFM
@@ -814,7 +823,7 @@ model = FFM.FieldAwareFactorizationMachine(field_dims=fields, embed_dim=8)
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.53654   validation loss : 0.48017   validation auc is 0.69726
+    EPOCH 0 train loss : 0.53437   validation loss : 0.48431   validation auc is 0.69762
     
 
 #### AFM
@@ -834,7 +843,7 @@ model = AFM.AttentionalFactorizationMachine(feature_fields=fields, embed_dim=8, 
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.70439   validation loss : 0.55860   validation auc is 0.63911
+    EPOCH 0 train loss : 0.73301   validation loss : 0.57867   validation auc is 0.64243
     
 
 #### DeepFM
@@ -854,7 +863,7 @@ model = DeepFM.DeepFM(feature_fields=fields, embed_dim=8, mlp_dims=(32,16), drop
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.55712   validation loss : 0.49020   validation auc is 0.68294
+    EPOCH 0 train loss : 0.97898   validation loss : 0.50353   validation auc is 0.68853
     
 
 #### xDeepFM
@@ -875,7 +884,7 @@ model = xDeepFM.xDeepFM(feature_fields=fields, embed_dim=8, mlp_dims=(32,16),
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.56085   validation loss : 0.49273   validation auc is 0.69788
+    EPOCH 0 train loss : 0.58850   validation loss : 0.49531   validation auc is 0.68098
     
 
 #### PNN
@@ -895,7 +904,7 @@ model = PNN.PNN(feature_fields=fields, embed_dim=8, mlp_dims=(32, 16), dropout=0
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.42965   validation loss : 0.40480   validation auc is 0.74818
+    EPOCH 0 train loss : 0.44456   validation loss : 0.40605   validation auc is 0.74571
     
 
 #### DCN
@@ -915,7 +924,11 @@ model = DCN.DeepCrossNet(feature_fields=fields, embed_dim=8, num_layers=3, mlp_d
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.41618   validation loss : 0.40377   validation auc is 0.74731
+    C:\Users\jiguang\anaconda3\envs\py36\lib\site-packages\torch\nn\modules\container.py:435: UserWarning: Setting attributes on ParameterList is not supported.
+      warnings.warn("Setting attributes on ParameterList is not supported.")
+    
+
+    EPOCH 0 train loss : 0.41461   validation loss : 0.40514   validation auc is 0.75012
     
 
 #### AutoInt
@@ -936,7 +949,7 @@ model = AutoInt.AutoIntNet(feature_fields=fields, embed_dim=8, head_num = 2,
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.54381   validation loss : 0.48163   validation auc is 0.69121
+    EPOCH 0 train loss : 0.57498   validation loss : 0.50322   validation auc is 0.68955
     
 
 #### FiBiNet
@@ -956,7 +969,7 @@ model = FiBiNET.FiBiNET(feature_fields=fields, embed_dim=8, reduction_ratio=2, p
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.41572   validation loss : 0.40727   validation auc is 0.74458
+    EPOCH 0 train loss : 0.41589   validation loss : 0.40396   validation auc is 0.74876
     
 
 #### DCNv2
@@ -976,7 +989,7 @@ model =  DCNv2.DeepCrossNetv2(feature_fields = fields, embed_dim = 16, layer_num
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.41408   validation loss : 0.40528   validation auc is 0.74748
+    EPOCH 0 train loss : 0.41441   validation loss : 0.40312   validation auc is 0.74947
     
 
 
@@ -989,7 +1002,7 @@ model =  DCNv2.DeepCrossNetv2(feature_fields = fields, embed_dim = 16, layer_num
 _ = train(model)
 ```
 
-    EPOCH 0 train loss : 0.41409   validation loss : 0.40550   validation auc is 0.75017
+    EPOCH 0 train loss : 0.41366   validation loss : 0.40360   validation auc is 0.75210
     
 
 ## 序列模型
