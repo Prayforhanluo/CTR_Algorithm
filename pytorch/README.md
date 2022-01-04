@@ -694,6 +694,20 @@ fields = data_X.max().values + 1 # 模型输入的feature_fields
 
 
 ```python
+fields
+```
+
+
+
+
+    array([    2,     6,     6,   987,   872,    18,   769,    62,    19,
+            8544, 47309,  2606,     4,     4,   448,     5,     6,   141,
+               4,    38,   144,    33], dtype=int64)
+
+
+
+
+```python
 #train, validation, test 集合
 tmp_X, test_X, tmp_y, test_y = train_test_split(data_X, data_y, test_size = 0.2, random_state=42, stratify=data_y)
 train_X, val_X, train_y, val_y = train_test_split(tmp_X, tmp_y, test_size = 0.25, random_state=42, stratify=tmp_y)
@@ -1003,6 +1017,26 @@ _ = train(model)
 ```
 
     EPOCH 0 train loss : 0.41366   validation loss : 0.40360   validation auc is 0.75210
+    
+
+#### DIFM
+
+
+```python
+from model import DIFM
+```
+
+
+```python
+model = DIFM.DIFM(feature_fields=fields, embed_size=8, head_num=2, dropout=0.1)
+```
+
+
+```python
+_ = train(model)
+```
+
+    EPOCH 0 train loss : 0.42742   validation loss : 0.41314   validation auc is 0.73831
     
 
 ## 序列模型
