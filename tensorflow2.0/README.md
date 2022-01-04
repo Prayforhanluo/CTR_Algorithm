@@ -1131,6 +1131,39 @@ model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values,
 
 
 
+#### DIFM
+
+
+```python
+from model import DIFM
+```
+
+
+```python
+model = DIFM.DIFM(feature_fields=fields, embed_dim=8, head_num=2, dropout=0.1)
+```
+
+
+```python
+model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), 
+              loss = 'binary_crossentropy', metrics=[keras.metrics.AUC()])
+```
+
+
+```python
+model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
+```
+
+    1875/1875 [==============================] - 11s 6ms/step - loss: 0.4154 - auc: 0.7222 - val_loss: 0.4100 - val_auc: 0.7392
+    
+
+
+
+
+    <tensorflow.python.keras.callbacks.History at 0x1d2a7f34e20>
+
+
+
 ## 序列模型
 
 ####  DIN
