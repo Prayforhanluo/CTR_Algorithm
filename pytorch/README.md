@@ -1039,6 +1039,26 @@ _ = train(model)
     EPOCH 0 train loss : 0.42742   validation loss : 0.41314   validation auc is 0.73831
     
 
+#### AFN
+
+
+```python
+from model import AFN
+```
+
+
+```python
+model = AFN.AFN(feature_fields=fields, embed_size=8, hidden_size=256, dropout=0.1)
+```
+
+
+```python
+_ = train(model)
+```
+
+    EPOCH 0 train loss : 0.55026   validation loss : 0.51018   validation auc is 0.68282
+    
+
 ## 序列模型
 
 #### DIN
