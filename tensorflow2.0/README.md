@@ -1164,6 +1164,39 @@ model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values,
 
 
 
+#### AFN
+
+
+```python
+from model import AFN
+```
+
+
+```python
+model = AFN.AFN(feature_fields=fields, embed_size=8, hidden_size=256, dropout=0.1)
+```
+
+
+```python
+model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), 
+              loss = 'binary_crossentropy', metrics=[keras.metrics.AUC()])
+```
+
+
+```python
+model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
+```
+
+    1875/1875 [==============================] - 14s 8ms/step - loss: 0.4203 - auc: 0.7150 - val_loss: 0.4073 - val_auc: 0.7446
+    
+
+
+
+
+    <tensorflow.python.keras.callbacks.History at 0x206acfd5940>
+
+
+
 ## 序列模型
 
 ####  DIN
