@@ -1197,6 +1197,39 @@ model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values,
 
 
 
+#### ONN
+
+
+```python
+from model import ONN
+```
+
+
+```python
+model = ONN.ONN(feature_fields=fields, embed_dim=8, mlp_dims=[64, 32], dropout=0.1)
+```
+
+
+```python
+model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), 
+              loss = 'binary_crossentropy', metrics=[keras.metrics.AUC()])
+```
+
+
+```python
+model.fit(train_X.values, train_y, batch_size=32, validation_data=(val_X.values, val_y), epochs=1)
+```
+
+    1875/1875 [==============================] - 137s 73ms/step - loss: 0.4377 - auc: 0.7004 - val_loss: 0.4053 - val_auc: 0.7478
+    
+
+
+
+
+    <tensorflow.python.keras.callbacks.History at 0x24f6a8b6a90>
+
+
+
 ## 序列模型
 
 ####  DIN
