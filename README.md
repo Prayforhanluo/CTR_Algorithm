@@ -26,3 +26,4 @@
 |   DCN-V2  |  :heavy_check_mark:  | :heavy_check_mark:  | [Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems,2020](https://arxiv.org/abs/2008.13535) |
 |   DIFM  |  :heavy_check_mark:  | :heavy_check_mark:  | [A Dual Input-aware Factorization Machine for CTR Prediction,2020](https://www.ijcai.org/Proceedings/2020/0434.pdf)  |
 |   AFN  |  :heavy_check_mark:  | :heavy_check_mark: | [Adaptive Factorization Network: Learning Adaptive-Order Feature Interactions,2020](https://arxiv.org/pdf/1909.03276)  |
+|   ONN  |  :heavy_check_mark:  | :heavy_check_mark: | [Operation-aware Neural Networks for User Response Prediction,2019](https://arxiv.org/pdf/1904.12579.pdf) |
