@@ -1059,6 +1059,26 @@ _ = train(model)
     EPOCH 0 train loss : 0.55026   validation loss : 0.51018   validation auc is 0.68282
     
 
+#### ONN
+
+
+```python
+from model import ONN
+```
+
+
+```python
+model = ONN.ONN(feature_fields=fields, embed_dim=8, mlp_dims=[64, 32], dropout=0.1)
+```
+
+
+```python
+_ = train(model)
+```
+
+    EPOCH 0 train loss : 0.42124   validation loss : 0.40391   validation auc is 0.74898
+    
+
 ## 序列模型
 
 #### DIN
