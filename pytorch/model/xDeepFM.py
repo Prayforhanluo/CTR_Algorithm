@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jul  1 14:38:49 2021
-
 @author: luoh1
 """
 
@@ -84,7 +83,7 @@ class xDeepFM(nn.Module):
         self.mlp = nn.Sequential(*dnn_layers)      
     
         # CIN layer
-        self.CIN = CIN(len(feature_fields), cross_layer_sizes=cross_layer_sizes,split_half=split_half)
+        self.CIN = CIN(len(feature_fields), cross_layer_sizes=cross_layer_sizes, split_half=split_half)
         
         # Linear layer
         self.linear = torch.nn.Embedding(sum(feature_fields)+1, 1)
@@ -95,10 +94,12 @@ class xDeepFM(nn.Module):
         
         embeded_x = self.embedding(tmp)
         
-        linear_part = self.linear(tmp) + self.bias
+        # Fix: Sum over the field dimension to make linear_part have shape (batch_size, 1), *patched by szw0407*
+        linear_part = self.linear(tmp).sum(dim=1) + self.bias
         CIN_part = self.CIN(embeded_x)
         mlp_part = self.mlp(embeded_x.view(-1, self.embedding_out_dim))
         
+        # Ensure all parts have the same shape (batch_size, 1)
         x = linear_part + CIN_part + mlp_part
         x = torch.sigmoid(x)
         
