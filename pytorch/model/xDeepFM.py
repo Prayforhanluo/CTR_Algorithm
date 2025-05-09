@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jul  1 14:38:49 2021
+@author: luoh1
+"""
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -88,7 +94,7 @@ class xDeepFM(nn.Module):
         
         embeded_x = self.embedding(tmp)
         
-        # Fix: Sum over the field dimension to make linear_part have shape (batch_size, 1)
+        # Fix: Sum over the field dimension to make linear_part have shape (batch_size, 1), *patched by szw0407*
         linear_part = self.linear(tmp).sum(dim=1) + self.bias
         CIN_part = self.CIN(embeded_x)
         mlp_part = self.mlp(embeded_x.view(-1, self.embedding_out_dim))
